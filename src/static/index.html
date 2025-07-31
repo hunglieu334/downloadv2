@@ -1,0 +1,666 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Video Tool - Download & Edit</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 20px;
+        }
+        
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            background: white;
+            border-radius: 15px;
+            box-shadow: 0 20px 40px rgba(0,0,0,0.1);
+            overflow: hidden;
+        }
+        
+        .header {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 30px;
+            text-align: center;
+        }
+        
+        .header h1 {
+            font-size: 2.5em;
+            margin-bottom: 10px;
+        }
+        
+        .header p {
+            font-size: 1.2em;
+            opacity: 0.9;
+        }
+        
+        .tabs {
+            display: flex;
+            background: #f8f9fa;
+            border-bottom: 1px solid #dee2e6;
+        }
+        
+        .tab {
+            flex: 1;
+            padding: 20px;
+            text-align: center;
+            cursor: pointer;
+            background: #f8f9fa;
+            border: none;
+            font-size: 1.1em;
+            font-weight: 600;
+            color: #6c757d;
+            transition: all 0.3s ease;
+        }
+        
+        .tab.active {
+            background: white;
+            color: #667eea;
+            border-bottom: 3px solid #667eea;
+        }
+        
+        .tab:hover {
+            background: #e9ecef;
+        }
+        
+        .content {
+            padding: 30px;
+        }
+        
+        .tab-content {
+            display: none;
+        }
+        
+        .tab-content.active {
+            display: block;
+        }
+        
+        .form-group {
+            margin-bottom: 25px;
+        }
+        
+        .form-group label {
+            display: block;
+            margin-bottom: 8px;
+            font-weight: 600;
+            color: #495057;
+        }
+        
+        .form-group input, .form-group select, .form-group textarea {
+            width: 100%;
+            padding: 12px;
+            border: 2px solid #e9ecef;
+            border-radius: 8px;
+            font-size: 1em;
+            transition: border-color 0.3s ease;
+        }
+        
+        .form-group input:focus, .form-group select:focus, .form-group textarea:focus {
+            outline: none;
+            border-color: #667eea;
+        }
+        
+        .btn {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border: none;
+            padding: 15px 30px;
+            border-radius: 8px;
+            font-size: 1.1em;
+            font-weight: 600;
+            cursor: pointer;
+            transition: transform 0.3s ease;
+        }
+        
+        .btn:hover {
+            transform: translateY(-2px);
+        }
+        
+        .btn:disabled {
+            opacity: 0.6;
+            cursor: not-allowed;
+            transform: none;
+        }
+        
+        .progress-container {
+            margin-top: 20px;
+            display: none;
+        }
+        
+        .progress-bar {
+            width: 100%;
+            height: 20px;
+            background: #e9ecef;
+            border-radius: 10px;
+            overflow: hidden;
+        }
+        
+        .progress-fill {
+            height: 100%;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            width: 0%;
+            transition: width 0.3s ease;
+        }
+        
+        .progress-text {
+            text-align: center;
+            margin-top: 10px;
+            font-weight: 600;
+            color: #495057;
+        }
+        
+        .status-container {
+            margin-top: 20px;
+            padding: 15px;
+            border-radius: 8px;
+            display: none;
+        }
+        
+        .status-success {
+            background: #d4edda;
+            color: #155724;
+            border: 1px solid #c3e6cb;
+        }
+        
+        .status-error {
+            background: #f8d7da;
+            color: #721c24;
+            border: 1px solid #f5c6cb;
+        }
+        
+        .status-info {
+            background: #d1ecf1;
+            color: #0c5460;
+            border: 1px solid #bee5eb;
+        }
+        
+        .filters-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 20px;
+            margin-top: 20px;
+        }
+        
+        .filter-group {
+            background: #f8f9fa;
+            padding: 20px;
+            border-radius: 8px;
+            border: 1px solid #e9ecef;
+        }
+        
+        .filter-group h3 {
+            margin-bottom: 15px;
+            color: #495057;
+        }
+        
+        .filter-item {
+            margin-bottom: 15px;
+        }
+        
+        .filter-item label {
+            display: flex;
+            align-items: center;
+            margin-bottom: 5px;
+        }
+        
+        .filter-item input[type="checkbox"] {
+            margin-right: 10px;
+            width: auto;
+        }
+        
+        .filter-params {
+            margin-left: 25px;
+            display: none;
+        }
+        
+        .filter-params.active {
+            display: block;
+        }
+        
+        .param-input {
+            margin-bottom: 10px;
+        }
+        
+        .param-input label {
+            font-size: 0.9em;
+            color: #6c757d;
+        }
+        
+        .param-input input {
+            margin-top: 5px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>🎬 Video Tool</h1>
+            <p>Download và chỉnh sửa video chuyên nghiệp với FFmpeg</p>
+        </div>
+        
+        <div class="tabs">
+            <button class="tab active" onclick="switchTab('download')">📥 Download Video</button>
+            <button class="tab" onclick="switchTab('channel')">📺 Download Kênh</button>
+            <button class="tab" onclick="switchTab('process')">✂️ Chỉnh Sửa Video</button>
+        </div>
+        
+        <div class="content">
+            <!-- Download Single Video Tab -->
+            <div id="download" class="tab-content active">
+                <h2>Download Video Đơn Lẻ</h2>
+                <form id="downloadForm">
+                    <div class="form-group">
+                        <label for="videoUrl">URL Video:</label>
+                        <input type="url" id="videoUrl" placeholder="https://www.youtube.com/watch?v=..." required>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="videoQuality">Chất Lượng:</label>
+                        <select id="videoQuality">
+                            <option value="best">Chất lượng cao nhất</option>
+                            <option value="worst">Chất lượng thấp nhất</option>
+                            <option value="bestvideo[height<=720]+bestaudio/best[height<=720]">720p</option>
+                            <option value="bestvideo[height<=1080]+bestaudio/best[height<=1080]">1080p</option>
+                            <option value="bestvideo[height<=1440]+bestaudio/best[height<=1440]">1440p</option>
+                            <option value="bestvideo[height<=2160]+bestaudio/best[height<=2160]">4K</option>
+                        </select>
+                    </div>
+                    
+                    <button type="submit" class="btn">Bắt Đầu Download</button>
+                </form>
+                
+                <div class="progress-container" id="downloadProgress">
+                    <div class="progress-bar">
+                        <div class="progress-fill" id="downloadProgressFill"></div>
+                    </div>
+                    <div class="progress-text" id="downloadProgressText">Đang chuẩn bị...</div>
+                </div>
+                
+                <div class="status-container" id="downloadStatus"></div>
+            </div>
+            
+            <!-- Download Channel Tab -->
+            <div id="channel" class="tab-content">
+                <h2>Download Toàn Bộ Kênh</h2>
+                <form id="channelForm">
+                    <div class="form-group">
+                        <label for="channelUrl">URL Kênh:</label>
+                        <input type="url" id="channelUrl" placeholder="https://www.youtube.com/@channelname" required>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="channelQuality">Chất Lượng:</label>
+                        <select id="channelQuality">
+                            <option value="best">Chất lượng cao nhất</option>
+                            <option value="bestvideo[height<=720]+bestaudio/best[height<=720]">720p</option>
+                            <option value="bestvideo[height<=1080]+bestaudio/best[height<=1080]">1080p</option>
+                            <option value="bestvideo[height<=1440]+bestaudio/best[height<=1440]">1440p</option>
+                            <option value="bestvideo[height<=2160]+bestaudio/best[height<=2160]">4K</option>
+                        </select>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="maxVideos">Số video tối đa (demo):</label>
+                        <input type="number" id="maxVideos" value="10" min="1" max="50">
+                    </div>
+                    
+                    <button type="submit" class="btn">Bắt Đầu Download Kênh</button>
+                </form>
+                
+                <div class="progress-container" id="channelProgress">
+                    <div class="progress-bar">
+                        <div class="progress-fill" id="channelProgressFill"></div>
+                    </div>
+                    <div class="progress-text" id="channelProgressText">Đang chuẩn bị...</div>
+                </div>
+                
+                <div class="status-container" id="channelStatus"></div>
+            </div>
+            
+            <!-- Process Videos Tab -->
+            <div id="process" class="tab-content">
+                <h2>Chỉnh Sửa Video Đa Luồng</h2>
+                <form id="processForm">
+                    <div class="form-group">
+                        <label for="videoFiles">Chọn Video Files (tối đa 5):</label>
+                        <input type="file" id="videoFiles" multiple accept="video/*" required>
+                        <small>Chọn tối đa 5 video để xử lý đồng thời</small>
+                    </div>
+                    
+                    <div class="filters-grid" id="filtersContainer">
+                        <!-- Filters will be loaded here -->
+                    </div>
+                    
+                    <button type="submit" class="btn">Bắt Đầu Xử Lý</button>
+                </form>
+                
+                <div class="progress-container" id="processProgress">
+                    <div class="progress-bar">
+                        <div class="progress-fill" id="processProgressFill"></div>
+                    </div>
+                    <div class="progress-text" id="processProgressText">Đang chuẩn bị...</div>
+                </div>
+                
+                <div class="status-container" id="processStatus"></div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        let currentJobId = null;
+        let statusInterval = null;
+        
+        // Tab switching
+        function switchTab(tabName) {
+            // Hide all tab contents
+            document.querySelectorAll('.tab-content').forEach(content => {
+                content.classList.remove('active');
+            });
+            
+            // Remove active class from all tabs
+            document.querySelectorAll('.tab').forEach(tab => {
+                tab.classList.remove('active');
+            });
+            
+            // Show selected tab content
+            document.getElementById(tabName).classList.add('active');
+            
+            // Add active class to clicked tab
+            event.target.classList.add('active');
+            
+            // Load filters if processing tab is selected
+            if (tabName === 'process') {
+                loadFilters();
+            }
+        }
+        
+        // Load available filters
+        async function loadFilters() {
+            try {
+                const response = await fetch('/api/video/filters');
+                const filters = await response.json();
+                
+                const container = document.getElementById('filtersContainer');
+                container.innerHTML = '';
+                
+                // Video filters
+                const videoGroup = document.createElement('div');
+                videoGroup.className = 'filter-group';
+                videoGroup.innerHTML = '<h3>🎨 Video Filters</h3>';
+                
+                Object.entries(filters.video).forEach(([filterName, filterInfo]) => {
+                    const filterItem = createFilterItem(filterName, filterInfo, 'video');
+                    videoGroup.appendChild(filterItem);
+                });
+                
+                // Audio filters
+                const audioGroup = document.createElement('div');
+                audioGroup.className = 'filter-group';
+                audioGroup.innerHTML = '<h3>🔊 Audio Filters</h3>';
+                
+                Object.entries(filters.audio).forEach(([filterName, filterInfo]) => {
+                    const filterItem = createFilterItem(filterName, filterInfo, 'audio');
+                    audioGroup.appendChild(filterItem);
+                });
+                
+                container.appendChild(videoGroup);
+                container.appendChild(audioGroup);
+                
+            } catch (error) {
+                console.error('Error loading filters:', error);
+            }
+        }
+        
+        function createFilterItem(filterName, filterInfo, category) {
+            const filterItem = document.createElement('div');
+            filterItem.className = 'filter-item';
+            
+            const checkbox = document.createElement('input');
+            checkbox.type = 'checkbox';
+            checkbox.id = `filter_${category}_${filterName}`;
+            checkbox.onchange = () => toggleFilterParams(filterName, category);
+            
+            const label = document.createElement('label');
+            label.appendChild(checkbox);
+            label.appendChild(document.createTextNode(`${filterInfo.description}`));
+            
+            const paramsDiv = document.createElement('div');
+            paramsDiv.className = 'filter-params';
+            paramsDiv.id = `params_${category}_${filterName}`;
+            
+            filterInfo.params.forEach(param => {
+                const paramInput = document.createElement('div');
+                paramInput.className = 'param-input';
+                
+                const paramLabel = document.createElement('label');
+                paramLabel.textContent = param;
+                
+                const input = document.createElement('input');
+                input.type = 'text';
+                input.id = `param_${category}_${filterName}_${param}`;
+                input.placeholder = `Nhập ${param}`;
+                
+                paramInput.appendChild(paramLabel);
+                paramInput.appendChild(input);
+                paramsDiv.appendChild(paramInput);
+            });
+            
+            filterItem.appendChild(label);
+            filterItem.appendChild(paramsDiv);
+            
+            return filterItem;
+        }
+        
+        function toggleFilterParams(filterName, category) {
+            const checkbox = document.getElementById(`filter_${category}_${filterName}`);
+            const params = document.getElementById(`params_${category}_${filterName}`);
+            
+            if (checkbox.checked) {
+                params.classList.add('active');
+            } else {
+                params.classList.remove('active');
+            }
+        }
+
+        // Handle single video download form submission
+        document.getElementById('downloadForm').addEventListener('submit', async (event) => {
+            event.preventDefault();
+            const url = document.getElementById('videoUrl').value;
+            const quality = document.getElementById('videoQuality').value;
+            
+            showProgress('download');
+            updateProgress('download', 0, 'Đang gửi yêu cầu...');
+
+            try {
+                const response = await fetch('/api/video/download', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({ url, quality })
+                });
+                const data = await response.json();
+                
+                if (response.ok) {
+                    currentJobId = data.job_id;
+                    statusInterval = setInterval(() => checkStatus('download', currentJobId), 1000);
+                    updateStatus('download', 'info', data.message);
+                } else {
+                    updateStatus('download', 'error', data.error || 'Đã xảy ra lỗi khi bắt đầu download.');
+                    hideProgress('download');
+                }
+            } catch (error) {
+                updateStatus('download', 'error', `Lỗi kết nối: ${error.message}`);
+                hideProgress('download');
+            }
+        });
+
+        // Handle channel download form submission
+        document.getElementById('channelForm').addEventListener('submit', async (event) => {
+            event.preventDefault();
+            const channel_url = document.getElementById('channelUrl').value;
+            const quality = document.getElementById('channelQuality').value;
+            const max_videos = parseInt(document.getElementById('maxVideos').value);
+            
+            showProgress('channel');
+            updateProgress('channel', 0, 'Đang gửi yêu cầu...');
+
+            try {
+                const response = await fetch('/api/video/download-channel', { // Corrected endpoint
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({ channel_url, quality, max_videos })
+                });
+                const data = await response.json();
+                
+                if (response.ok) {
+                    currentJobId = data.job_id;
+                    statusInterval = setInterval(() => checkStatus('channel', currentJobId), 1000);
+                    updateStatus('channel', 'info', data.message);
+                } else {
+                    updateStatus('channel', 'error', data.error || 'Đã xảy ra lỗi khi bắt đầu download kênh.');
+                    hideProgress('channel');
+                }
+            } catch (error) {
+                updateStatus('channel', 'error', `Lỗi kết nối: ${error.message}`);
+                hideProgress('channel');
+            }
+        });
+
+        // Handle video processing form submission
+        document.getElementById('processForm').addEventListener('submit', async (event) => {
+            event.preventDefault();
+            const videoFilesInput = document.getElementById('videoFiles');
+            const files = Array.from(videoFilesInput.files);
+
+            if (files.length === 0) {
+                updateStatus('process', 'error', 'Vui lòng chọn ít nhất một video để xử lý.');
+                return;
+            }
+
+            if (files.length > 5) {
+                updateStatus('process', 'error', 'Chỉ có thể xử lý tối đa 5 video cùng lúc.');
+                return;
+            }
+
+            // In a real application, you would upload these files first and get their paths on the server.
+            // For this demo, we'll simulate by just getting the file names.
+            const video_files = files.map(file => file.name); // This needs to be actual server paths
+
+            const selectedFilters = {};
+            document.querySelectorAll('.filter-item input[type="checkbox"]:checked').forEach(checkbox => {
+                const idParts = checkbox.id.split('_');
+                const category = idParts[1];
+                const filterName = idParts[2];
+                selectedFilters[filterName] = {};
+
+                const paramsDiv = document.getElementById(`params_${category}_${filterName}`);
+                if (paramsDiv) {
+                    paramsDiv.querySelectorAll('input[type="text"]').forEach(paramInput => {
+                        const paramName = paramInput.id.split('_').pop();
+                        selectedFilters[filterName][paramName] = paramInput.value;
+                    });
+                }
+            });
+            
+            showProgress('process');
+            updateProgress('process', 0, 'Đang gửi yêu cầu...');
+
+            try {
+                // For a real application, you'd need to upload files first and then send their server paths.
+                // This is a simplified demo, so we'll just send dummy paths.
+                const response = await fetch('/api/video/process', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({ video_files, filters: selectedFilters })
+                });
+                const data = await response.json();
+                
+                if (response.ok) {
+                    currentJobId = data.job_id;
+                    statusInterval = setInterval(() => checkStatus('process', currentJobId), 1000);
+                    updateStatus('process', 'info', data.message);
+                } else {
+                    updateStatus('process', 'error', data.error || 'Đã xảy ra lỗi khi bắt đầu xử lý.');
+                    hideProgress('process');
+                }
+            } catch (error) {
+                updateStatus('process', 'error', `Lỗi kết nối: ${error.message}`);
+                hideProgress('process');
+            }
+        });
+
+        // Function to check job status
+        async function checkStatus(type, jobId) {
+            try {
+                const response = await fetch(`/api/video/status/${jobId}`);
+                const data = await response.json();
+
+                if (response.ok) {
+                    updateProgress(type, data.progress, `${data.status.charAt(0).toUpperCase() + data.status.slice(1)}...`);
+                    if (data.status === 'completed') {
+                        clearInterval(statusInterval);
+                        updateStatus(type, 'success', 'Hoàn thành! ' + (data.files ? `Files: ${data.files.join(', ')}` : ''));
+                        hideProgress(type);
+                    } else if (data.status === 'error') {
+                        clearInterval(statusInterval);
+                        updateStatus(type, 'error', `Lỗi: ${data.error}`);
+                        hideProgress(type);
+                    }
+                } else {
+                    clearInterval(statusInterval);
+                    updateStatus(type, 'error', data.error || 'Không thể lấy trạng thái công việc.');
+                    hideProgress(type);
+                }
+            } catch (error) {
+                clearInterval(statusInterval);
+                updateStatus(type, 'error', `Lỗi kết nối: ${error.message}`);
+                hideProgress(type);
+            }
+        }
+
+        function showProgress(type) {
+            document.getElementById(`${type}Progress`).style.display = 'block';
+            document.getElementById(`${type}Status`).style.display = 'none';
+        }
+
+        function hideProgress(type) {
+            // document.getElementById(`${type}Progress`).style.display = 'none';
+        }
+
+        function updateProgress(type, progress, text) {
+            document.getElementById(`${type}ProgressFill`).style.width = `${progress}%`;
+            document.getElementById(`${type}ProgressText`).textContent = text;
+        }
+
+        function updateStatus(type, statusType, message) {
+            const statusDiv = document.getElementById(`${type}Status`);
+            statusDiv.className = `status-container status-${statusType}`;
+            statusDiv.textContent = message;
+            statusDiv.style.display = 'block';
+        }
+
+        // Initial load
+        document.addEventListener('DOMContentLoaded', () => {
+            // No need to load filters initially unless process tab is active by default
+            // loadFilters(); 
+        });
+    </script>
+</body>
+</html>
+
+
